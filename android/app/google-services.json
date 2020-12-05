@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "828422203487",
+    "firebase_url": "https://unihubdb.firebaseio.com",
+    "project_id": "unihubdb",
+    "storage_bucket": "unihubdb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:828422203487:android:75f7960f18810fcf0413ea",
+        "android_client_info": {
+          "package_name": "com.unirises.unihub"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "828422203487-ldd5sqjcejip6hm2pl8b3o5nq61avbon.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.unirises.unihub",
+            "certificate_hash": "e6c87bf6c84f91ced4ab9bd7dce9a4bd41b85586"
+          }
+        },
+        {
+          "client_id": "828422203487-0rol0m262fq758pib0e6dac0j15ac92s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCwXVlB9LNuqXAEkjoJ_PFdqV1EXT-klZc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "828422203487-0rol0m262fq758pib0e6dac0j15ac92s.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,49 @@
+name: unihub
+description: Unihub - a filipino social media platform.
+
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.7.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  firebase_core: ^0.5.0
+  firebase_auth: ^0.18.1+2
+  image_picker: ^0.6.7+12
+  image_cropper: ^1.3.1
+  firebase_database: ^4.1.1
+  firebase_storage: ^4.0.1
+  cloud_firestore: ^0.14.3
+  flutter_bloc: ^6.1.1
+  fluttertoast: ^7.1.4
+  shimmer: ^1.1.2
+
+flutter:
+
+  uses-material-design: true
+
+  assets:
+    - ./images/
+
+  fonts:
+    - family: DefaultFont
+      fonts:
+        - asset: ./fonts/sf_pro_display_bold.ttf
+        - asset: ./fonts/sf_pro_display_regular.ttf
+
+    - family: Baybayin
+      fonts:
+        - asset: ./fonts/baybayin.ttf
+    - family: Sen
+      fonts:
+        - asset: ./fonts/Sen-Regular.ttf

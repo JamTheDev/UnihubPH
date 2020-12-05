@@ -1,0 +1,182 @@
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+class UserDisplay extends StatefulWidget {
+  String profile, username, tag, uid;
+
+  UserDisplay({this.profile, this.username, this.tag, this.uid});
+
+  @override
+  _UserDisplayState createState() => _UserDisplayState();
+}
+
+class _UserDisplayState extends State<UserDisplay> {
+  User u = FirebaseAuth.instance.currentUser;
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Container(
+        padding: EdgeInsets.all(5),
+        child: Column(
+          children: [
+            Container(
+              child: Row(
+                children: [
+                  Container(
+                    child: CircleAvatar(
+                      child: ClipOval(
+                        child: Image.network(
+                          widget.profile,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    margin: EdgeInsets.fromLTRB(20, 0, 0, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.username,
+                          style: TextStyle(
+                              color: Colors.black,
+                              fontFamily: "Sen",
+                              fontSize: 10),
+                        ),
+                        Text(
+                          widget.tag,
+                          style: TextStyle(
+                              color: Colors.grey,
+                              fontFamily: "Sen",
+                              fontSize: 10),
+                        ),
+                        Row(
+                          children: [
+                            StreamBuilder(
+                              stream: FirebaseFirestore.instance
+                                  .collection("FollowUsers")
+                                  .doc(widget.uid)
+                                  .snapshots(),
+                              builder: (_, snapshot) {
+                                if (!snapshot.hasData) {
+                                  return Text("0 followers",
+                                      style: TextStyle(
+                                          color: Colors.grey,
+                                          fontFamily: "Sen",
+                                          fontSize: 10));
+                                } else {
+                                  int likes = snapshot.data.data().length;
+                                  int l = likes - 1;
+                                  return Text(l.toString() + " followers",
+                                      style: TextStyle(
+                                          color: Colors.grey,
+                                          fontFamily: "Sen",
+                                          fontSize: 10));
+                                }
+                              },
+                            ),
+                            Container(
+                              child: Text(" | ",
+                                  style: TextStyle(
+                                      color: Colors.grey,
+                                      fontFamily: "Sen",
+                                      fontSize: 10)),
+                            ),
+                            Container(
+                              child: Text("Level 0",
+                                  style: TextStyle(
+                                      color: Colors.grey,
+                                      fontFamily: "Sen",
+                                      fontSize: 10)),
+                            )
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                      child: Container(
+                          alignment: Alignment.bottomRight,
+                          child: widget.uid == u.uid
+                              ? Container()
+                              : MaterialButton(
+                                  elevation: 3,
+                                  minWidth: 7,
+                                  height: 20,
+                                  shape: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                          style: BorderStyle.solid,
+                                          width: 1.0,
+                                          color: Colors.white),
+                                      borderRadius:
+                                          new BorderRadius.circular(20.0)),
+                                  color: Colors.white,
+                                  onPressed: () {
+                                    Future<DocumentSnapshot> snap =
+                                        FirebaseFirestore.instance
+                                            .collection("FollowUsers")
+                                            .doc(widget.uid)
+                                            .get();
+                                    snap.then((value) {
+                                      if (!value.data().containsKey(u.uid)) {
+                                        FirebaseFirestore.instance
+                                            .collection("FollowUsers")
+                                            .doc(widget.uid)
+                                            .set({u.uid: "follow"},
+                                                SetOptions(merge: true));
+                                      } else {
+                                        FirebaseFirestore.instance
+                                            .collection("FollowUsers")
+                                            .doc(widget.uid)
+                                            .update(
+                                                {u.uid: FieldValue.delete()});
+                                      }
+                                    });
+                                  },
+                                  child: StreamBuilder(
+                                      stream: FirebaseFirestore.instance
+                                          .collection("FollowUsers")
+                                          .doc(widget.uid)
+                                          .snapshots(),
+                                      builder: (_, snapshot) {
+                                        if (snapshot.hasData) {
+                                          if (snapshot.data
+                                              .data()
+                                              .containsKey(u.uid)) {
+                                            return Text(
+                                              "Following",
+                                              style: TextStyle(
+                                                  fontFamily: "Sen",
+                                                  fontSize: 10,
+                                                  color: Colors.black),
+                                            );
+                                          } else {
+                                            return Text(
+                                              "Follow",
+                                              style: TextStyle(
+                                                  fontFamily: "Sen",
+                                                  fontSize: 10,
+                                                  color: Colors.black),
+                                            );
+                                          }
+                                        } else {
+                                          return Text(
+                                            "Follow",
+                                            style: TextStyle(
+                                                fontFamily: "Sen",
+                                                fontSize: 15,
+                                                color: Colors.white),
+                                          );
+                                        }
+                                      })))),
+                ],
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
