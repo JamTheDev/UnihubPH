@@ -15,7 +15,6 @@ class _UserInfo1State extends State<UserInfo1> {
   void _validateTextViews(){
     if(forms.currentState.validate()){
       forms.currentState.save();
-      RegisterInformation rinfo = new RegisterInformation();
       RegisterInformation.firstName = firstName;
       RegisterInformation.lastName = lastName;
       Navigator.pushNamedAndRemoveUntil(context, "/credentials", (r) => false);

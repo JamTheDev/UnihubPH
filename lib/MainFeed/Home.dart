@@ -21,7 +21,7 @@ class _HomeState extends State<Home> {
   List<DocumentSnapshot> _data = new List<DocumentSnapshot>();
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
-  Future<Null> getPosts() async {
+  Future getPosts() async {
     QuerySnapshot data;
     final firestore = FirebaseFirestore.instance;
     if (_lastVisible == null) {
@@ -125,10 +125,6 @@ class _HomeState extends State<Home> {
                       ),
                     );
                   }
-                  /*
-                   baseColor: Colors.grey[200],
-                              highlightColor: Colors.grey[350],
-                   */
                   final DocumentSnapshot document = _data[index];
                   return document["author"] != u.uid
                       ? StreamBuilder(
