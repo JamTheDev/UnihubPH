@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:unihub/CustomWidgets/ReadMoreText.dart';
 import 'package:unihub/MainFeed/CommentSection.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:unihub/MainFeed/UserAccount.dart';
@@ -460,14 +461,16 @@ class _PostDesignState extends State<PostDesign> {
                            alignment: Alignment.center,
                            child: ClipRRect(
                              borderRadius: BorderRadius.circular(15.0),
-                             child: widget.image == null ? Shimmer.fromColors(child: SizedBox(
-                               height: 50,
-                               child: Container(
-                                 color: Colors.grey,
+                             child: CachedNetworkImage(
+                               imageUrl: widget.image,
+                               placeholder: (context, url) =>  Shimmer.fromColors(
+                                 baseColor: Colors.grey[200],
+                                 highlightColor: Colors.grey[400],
+                                 child: Container(
+                                     child: Image(image: AssetImage("./images/placeh.jpg"), fit: BoxFit.cover,),
+                                   ),
                                ),
-                             ), baseColor: null, highlightColor: null) : Image.network(
-                               widget.image,
-                               fit: BoxFit.cover,
+                               errorWidget: (context, url, error) => Icon(Icons.error),
                              ),
                            ),
                          )

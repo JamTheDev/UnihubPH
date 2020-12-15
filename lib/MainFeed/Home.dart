@@ -99,17 +99,19 @@ class _HomeState extends State<Home> {
           size: 30,
         ),
       ),
-
       key: scaffoldKey,
       body: SafeArea(
         child: Container(
           child: RefreshIndicator(
             onRefresh: () async {
-              _data.clear();
-              _lastVisible = null;
-              await getPosts();
+              setState(() {
+                _data.clear();
+                _lastVisible = null;
+                getPosts();
+              });
             },
             child: ListView.builder(
+              key: new PageStorageKey('myListView'),
               controller: controller,
               itemCount: _data.length + 1,
               itemBuilder: (_, index) {
