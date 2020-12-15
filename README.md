@@ -1,4 +1,4 @@
-# unihub
+# Unihub
 
 Unihub - a filipino social media platform.
 
