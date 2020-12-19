@@ -28,13 +28,256 @@ class PostDesign extends StatefulWidget {
 }
 
 class _PostDesignState extends State<PostDesign> {
+  CollectionReference ref =
+  FirebaseFirestore.instance.collection("PostsPath");
+  bool isDeleting = false;
+  Future<void> _editPost() async {
+    final myController2 = TextEditingController();
+    return showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(
+              "Change Info",
+              style: TextStyle(fontFamily: "Sen"),
+            ),
+            content: Container(
+              height: MediaQuery.of(context).size.height / 6,
+              child: Column(
+                children: [
+                  Expanded(
+                    child: new TextField(
+                      controller: myController2,
+                      autofocus: true,
+                      decoration: new InputDecoration(
+                          labelText: 'Edit ',
+                          hintText: 'Text here!'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              new FlatButton(
+                  child: const Text('Cancel'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  }),
+              new FlatButton(
+                  child: const Text('Submit!'),
+                  onPressed: () {
+                      firestore
+                          .collection("PostsPath")
+                          .doc(widget.postID)
+                          .update({"caption": myController2.text}).whenComplete(() =>   Navigator.pop(context));
+
+                  })
+            ],
+          );
+        });
+  }
+  Future openDialog() {
+    return showDialog(
+        context: context,
+        useSafeArea: true,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            scrollable: true,
+            title: Text("Post Menu", style: TextStyle(fontFamily: "Sen")),
+            content: Container(
+              height: MediaQuery.of(context).size.height / 2.6,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  widget.uid == u.uid ? Container(
+                    margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
+                        _editPost();
+                      },
+                      child: Row(
+                        children: [
+                          Icon(Icons.create),
+                          Container(
+                            child: Text(
+                              "Edit Post",
+                              style: TextStyle(fontFamily: "Sen"),
+                            ),
+                            margin: EdgeInsets.fromLTRB(15, 0, 0, 0),
+                          )
+                        ],
+                      ),
+                    ),
+                  ) : Container(),
+                  widget.uid == u.uid ? Container(
+                    margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
+                        setState(() {
+                          isDeleting = true;
+                        });
+                        if (widget.sharedPost != "true") {
+                          firestore
+                              .collection("PostsPath")
+                              .doc(widget.postID)
+                              .delete();
+                          if(widget.image != null) {
+                            StorageReference photoRef = FirebaseStorage.instance
+                                .ref()
+                                .child("profilePictures/" + widget.image);
+
+                            photoRef.delete().whenComplete(() {
+                              Navigator.of(context).pop();
+                              _showDialog(
+                                  "Your post has been deleted!", "Success!");
+                            });
+                          }
+                          setState(() {
+                            isDeleting = false;
+                          });
+                        }
+                      },
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete),
+                          Container(
+                            child: Text(
+                              "Delete Post",
+                              style: TextStyle(fontFamily: "Sen"),
+                            ),
+                            margin: EdgeInsets.fromLTRB(15, 0, 0, 0),
+                          )
+                        ],
+                      ),
+                    ),
+                  ) : Container(),
+                  Container(
+                    margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {},
+                      child: Row(
+                        children: [
+                          Icon(Icons.insights),
+                          Container(
+                            child: Text(
+                              "Support",
+                              style: TextStyle(fontFamily: "Sen"),
+                            ),
+                            margin: EdgeInsets.fromLTRB(15, 0, 0, 0),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                  Container(
+                    margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
+                        ref.doc(widget.postID).collection("others").doc("reports").set({
+                          u.uid: "report",
+                        }, SetOptions(merge: true));
+                        Navigator.of(context).pop();
+                      },
+                      child: Row(
+                        children: [
+                          Icon(Icons.error),
+                          Container(
+                            child: Text(
+                              "Report Post",
+                              style: TextStyle(fontFamily: "Sen"),
+                            ),
+                            margin: EdgeInsets.fromLTRB(15, 0, 0, 0),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                  Container(
+                    margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {},
+                      child: Row(
+                        children: [
+                          Icon(Icons.bookmark_border),
+                          Container(
+                            child: Text(
+                              "Save Post",
+                              style: TextStyle(fontFamily: "Sen"),
+                            ),
+                            margin: EdgeInsets.fromLTRB(15, 0, 0, 0),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                  Container(
+                    margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
+                        ref.doc(widget.postID).collection("others").doc("hides").set({
+                          u.uid: "hide",
+                        }, SetOptions(merge: true)).whenComplete(() => print("done"));
+                        Navigator.of(context).pop();
+                      },
+                      child: Row(
+                        children: [
+                          Icon(Icons.indeterminate_check_box),
+                          Container(
+                            child: Text(
+                              "Hide Post",
+                              style: TextStyle(fontFamily: "Sen"),
+                            ),
+                            margin: EdgeInsets.fromLTRB(15, 0, 0, 0),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                  Container(
+                    margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {},
+                      child: Row(
+                        children: [
+                          Icon(Icons.arrow_downward),
+                          Container(
+                            child: Text(
+                              "Downvote Post",
+                              style: TextStyle(fontFamily: "Sen"),
+                            ),
+                            margin: EdgeInsets.fromLTRB(15, 0, 0, 0),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text("EXIT"))
+            ],
+          );
+        });
+  }
+
   User u = FirebaseAuth.instance.currentUser;
   CollectionReference postsRef;
   Map<String, dynamic> data;
   QuerySnapshot collectionState;
   final firestore = FirebaseFirestore.instance;
-  Future getUser() async {
 
+  Future getUser() async {
     QuerySnapshot qs = await firestore
         .collection("UserInfo")
         .orderBy("createdAt", descending: false)
@@ -43,7 +286,6 @@ class _PostDesignState extends State<PostDesign> {
   }
 
   Future getPosts() async {
-
     QuerySnapshot qs = await firestore.collection("PostLikes").get();
     return qs.docs;
   }
@@ -67,37 +309,6 @@ class _PostDesignState extends State<PostDesign> {
         timeInSecForIosWeb: 1,
       );
     });
-  }
-
-  RichText _convertHashtag(String text) {
-    List<String> split = text.split(RegExp("#"));
-    List<String> hashtags = split.getRange(1, split.length).fold([], (t, e) {
-      var texts = e.split(" ");
-      if (texts.length > 1) {
-        return List.from(t)
-          ..addAll(["#${texts.first}", "${e.substring(texts.first.length)}"]);
-      }
-      return List.from(t)..add("#${texts.first}");
-    });
-    return RichText(
-      text: TextSpan(
-        children: [TextSpan(text: split.first)]..addAll(hashtags
-            .map((text) => text.contains("#")
-                ? TextSpan(
-                    text: text,
-                    style: TextStyle(
-                        fontFamily: "Sen",
-                        fontSize: 13,
-                        color: text.contains("#")
-                            ? Color.fromRGBO(34, 167, 240, 1)
-                            : Colors.black))
-                : TextSpan(
-                    text: text,
-                    style: TextStyle(
-                        fontFamily: "Sen", fontSize: 13, color: Colors.black)))
-            .toList()),
-      ),
-    );
   }
 
   Future<void> _showDialog(String text, String title) async {
@@ -140,7 +351,12 @@ class _PostDesignState extends State<PostDesign> {
         stream: postsRef.snapshots(),
         builder: (_, snapshots) {
           if (!snapshots.hasData) {
-            return Shimmer.fromColors(child: Container(height: 20,), baseColor: Colors.grey[200], highlightColor: Colors.grey[350]);
+            return Shimmer.fromColors(
+                child: Container(
+                  height: 20,
+                ),
+                baseColor: Colors.grey[200],
+                highlightColor: Colors.grey[350]);
           } else {
             return Column(children: [
               Container(
@@ -169,7 +385,15 @@ class _PostDesignState extends State<PostDesign> {
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => UserAccount(image: widget.image, author: widget.uid, fullName: snapshot.data["firstName"] + " " + snapshot.data["lastName"], userTag: snapshot.data["userTag"],)));
+                                      builder: (context) => UserAccount(
+                                            image: widget.image,
+                                            author: widget.uid,
+                                            fullName:
+                                                snapshot.data["firstName"] +
+                                                    " " +
+                                                    snapshot.data["lastName"],
+                                            userTag: snapshot.data["userTag"],
+                                          )));
                             },
                           );
                         }
@@ -205,17 +429,27 @@ class _PostDesignState extends State<PostDesign> {
                                 } else {
                                   return Row(
                                     children: [
-                                  Text(
-                                  snapshot.data["firstName"] +
-                                  " " +
-                                  snapshot.data["lastName"],
-                                    style: TextStyle(
-                                        color: Colors.black,
-                                        fontFamily: "Sen",
-                                        fontSize: 10),
-                                  ),
-                                      snapshot.data["verified"] == "true" ? Container(margin: EdgeInsets.fromLTRB(3, 0,0,0),child: Icon(Icons.verified, color: Color.fromRGBO(34, 167, 240, 1), size: 15,),) : Container()
-
+                                      Text(
+                                        snapshot.data["firstName"] +
+                                            " " +
+                                            snapshot.data["lastName"],
+                                        style: TextStyle(
+                                            color: Colors.black,
+                                            fontFamily: "Sen",
+                                            fontSize: 10),
+                                      ),
+                                      snapshot.data["verified"] == "true"
+                                          ? Container(
+                                              margin: EdgeInsets.fromLTRB(
+                                                  3, 0, 0, 0),
+                                              child: Icon(
+                                                Icons.verified,
+                                                color: Color.fromRGBO(
+                                                    34, 167, 240, 1),
+                                                size: 15,
+                                              ),
+                                            )
+                                          : Container()
                                     ],
                                   );
                                 }
@@ -339,7 +573,8 @@ class _PostDesignState extends State<PostDesign> {
                                               });
                                             },
                                             child: StreamBuilder(
-                                                stream: FirebaseFirestore.instance
+                                                stream: FirebaseFirestore
+                                                    .instance
                                                     .collection("FollowUsers")
                                                     .doc(widget.uid)
                                                     .snapshots(),
@@ -353,7 +588,8 @@ class _PostDesignState extends State<PostDesign> {
                                                         style: TextStyle(
                                                             fontFamily: "Sen",
                                                             fontSize: 10,
-                                                            color: Colors.black),
+                                                            color:
+                                                                Colors.black),
                                                       );
                                                     } else {
                                                       return Text(
@@ -361,7 +597,8 @@ class _PostDesignState extends State<PostDesign> {
                                                         style: TextStyle(
                                                             fontFamily: "Sen",
                                                             fontSize: 10,
-                                                            color: Colors.black),
+                                                            color:
+                                                                Colors.black),
                                                       );
                                                     }
                                                   } else {
@@ -375,24 +612,15 @@ class _PostDesignState extends State<PostDesign> {
                                                   }
                                                 })),
                                       ),
-                                widget.sharedPost != "true"
-                                    ? Container(
-                                        alignment: Alignment.bottomRight,
-                                        margin: EdgeInsets.fromLTRB(5, 0, 0, 0),
-                                        child: GestureDetector(
-                                          child: Icon(Icons.delete),
-                                          onTap: () {
-                                            if(widget.sharedPost != "true"){
-                                              firestore.collection("PostsPath").doc(widget.postID).delete().then((value) async {
-                                                StorageReference photoRef = FirebaseStorage.instance
-                                                    .ref().child("profilePictures/" + widget.image);
-                                                await photoRef.delete().whenComplete(() => _showDialog("Your post has been deleted!", "Success!"));
-                                              });
-                                            }
-                                          }
-                                        ),
-                                      )
-                                    : Container()
+                                Container(
+                                  alignment: Alignment.bottomRight,
+                                  margin: EdgeInsets.fromLTRB(5, 0, 0, 0),
+                                  child: GestureDetector(
+                                      child: Icon(Icons.more_horiz),
+                                      onTap: () {
+                                        openDialog();
+                                      }),
+                                )
                               ],
                             ))),
                   ],
@@ -413,7 +641,8 @@ class _PostDesignState extends State<PostDesign> {
                                       color: Colors.black,
                                       fontFamily: "Sen",
                                       fontSize: 13),
-                                  colorClickableText: Color.fromRGBO(34, 167, 240, 1),
+                                  colorClickableText:
+                                      Color.fromRGBO(34, 167, 240, 1),
                                   trimExpandedText: " Collapse",
                                   trimCollapsedText: "...Show more",
                                   trimLength: 110,
@@ -423,64 +652,68 @@ class _PostDesignState extends State<PostDesign> {
                                 alignment: Alignment.center,
                                 padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
                                 child: Card(
-                                  shape: RoundedRectangleBorder(
-                                    side: BorderSide(
-                                        color: Colors.white70, width: 1),
-                                    borderRadius: BorderRadius.circular(15),
-                                  ),
-                                  child: Container(
-                                    padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
-                                    alignment: Alignment.centerLeft,
-                                    margin: EdgeInsets.fromLTRB(10, 10, 10, 10),
-                                    child: ReadMoreText(
-                                      widget.caption,
-                                      style: TextStyle(
-                                          color: Colors.black,
-                                          fontFamily: "Sen",
-                                          fontSize: 13),
-                                      trimLength: 110,
-                                      colorClickableText: Color.fromRGBO(34, 167, 240, 1),
-                                      trimExpandedText: " collapse",
-
+                                    shape: RoundedRectangleBorder(
+                                      side: BorderSide(
+                                          color: Colors.white70, width: 1),
+                                      borderRadius: BorderRadius.circular(15),
                                     ),
-                                    )
-                                  ),
-                                ),
-
+                                    child: Container(
+                                      padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
+                                      alignment: Alignment.centerLeft,
+                                      margin:
+                                          EdgeInsets.fromLTRB(10, 10, 10, 10),
+                                      child: ReadMoreText(
+                                        widget.caption,
+                                        style: TextStyle(
+                                            color: Colors.black,
+                                            fontFamily: "Sen",
+                                            fontSize: 13),
+                                        trimLength: 110,
+                                        colorClickableText:
+                                            Color.fromRGBO(34, 167, 240, 1),
+                                        trimExpandedText: " collapse",
+                                      ),
+                                    )),
+                              ),
 
 /*
 
  */
-                       Container(
-                         child: widget.image != null
-                             ? Container(
-                           padding: widget.image == null
-                               ? EdgeInsets.fromLTRB(0, 5, 0, 0)
-                               : EdgeInsets.fromLTRB(0, 5, 0, 20),
-                           margin: EdgeInsets.fromLTRB(0, 5, 0, 0),
-                           alignment: Alignment.center,
-                           child: ClipRRect(
-                             borderRadius: BorderRadius.circular(15.0),
-                             child: CachedNetworkImage(
-                               imageUrl: widget.image,
-                               placeholder: (context, url) =>  Shimmer.fromColors(
-                                 baseColor: Colors.grey[200],
-                                 highlightColor: Colors.grey[400],
-                                 child: Container(
-                                     child: Image(image: AssetImage("./images/placeh.jpg"), fit: BoxFit.cover,),
-                                   ),
-                               ),
-                               errorWidget: (context, url, error) => Icon(Icons.error),
-                             ),
-                           ),
-                         )
-                             : Center(
-                           child: Container(
-                             padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
-                           ),
-                         ),
-                       )
-
+                        Container(
+                          child: widget.image != null
+                              ? Container(
+                                  padding: widget.image == null
+                                      ? EdgeInsets.fromLTRB(0, 5, 0, 0)
+                                      : EdgeInsets.fromLTRB(0, 5, 0, 20),
+                                  margin: EdgeInsets.fromLTRB(0, 5, 0, 0),
+                                  alignment: Alignment.center,
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(15.0),
+                                    child: CachedNetworkImage(
+                                      imageUrl: widget.image,
+                                      placeholder: (context, url) =>
+                                          Shimmer.fromColors(
+                                        baseColor: Colors.grey[200],
+                                        highlightColor: Colors.grey[400],
+                                        child: Container(
+                                          child: Image(
+                                            image: AssetImage(
+                                                "./images/placeh.jpg"),
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
+                                      ),
+                                      errorWidget: (context, url, error) =>
+                                          Icon(Icons.error),
+                                    ),
+                                  ),
+                                )
+                              : Center(
+                                  child: Container(
+                                    padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
+                                  ),
+                                ),
+                        )
                       ],
                     ),
                     Positioned(
@@ -613,7 +846,7 @@ class _PostDesignState extends State<PostDesign> {
                         )),
                     widget.sharedPost != "true"
                         ? Positioned(
-                        bottom: widget.image != null ? -7 : 15,
+                            bottom: widget.image != null ? -7 : 15,
                             left: 130,
                             child: MaterialButton(
                               minWidth: 8,
@@ -638,7 +871,15 @@ class _PostDesignState extends State<PostDesign> {
                                 ],
                               ),
                             ))
-                        : Container()
+                        : Container(),
+
+                      (isDeleting)
+                        ? Container(
+                      color: Colors.white30,
+                      height: MediaQuery.of(context).size.height * 0.95,
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                        : Center()
                   ],
                 ),
               )

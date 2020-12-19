@@ -20,6 +20,11 @@ class _HomeState extends State<Home> {
   bool _isLoading;
   List<DocumentSnapshot> _data = new List<DocumentSnapshot>();
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  StreamSubscription<DocumentSnapshot> subscription;
+  var hide = false;
+
+
+
 
   Future getPosts() async {
     QuerySnapshot data;
@@ -115,6 +120,7 @@ class _HomeState extends State<Home> {
               controller: controller,
               itemCount: _data.length + 1,
               itemBuilder: (_, index) {
+
                 if (index < _data.length) {
                   if (_data.length == 0) {
                     return Container(
@@ -127,49 +133,52 @@ class _HomeState extends State<Home> {
                       ),
                     );
                   }
-                  final DocumentSnapshot document = _data[index];
-                  return document["author"] != u.uid
-                      ? StreamBuilder(
-                          stream: FirebaseFirestore.instance
-                              .collection("FollowUsers")
-                              .doc(document["author"])
-                              .snapshots(),
-                          builder: (_, snapshots) {
-                            if (!snapshots.hasData) {
-                              return Container();
+                final DocumentSnapshot document = _data[index];
+                  DocumentReference docs = FirebaseFirestore.instance.collection("PostsPath").doc(document["postID"]).collection("others").doc("hides");
+                  return StreamBuilder(stream: docs.snapshots(), builder: (_, snap) {
+                      return !snap.data.data().containsKey(u.uid) ? document["author"] != u.uid
+                        ? StreamBuilder(
+                        stream: FirebaseFirestore.instance
+                            .collection("FollowUsers")
+                            .doc(document["author"])
+                            .snapshots(),
+                        builder: (_, snapshots) {
+                          if (!snapshots.hasData) {
+                            return Container();
+                          } else {
+                            if (snapshots.data.data().containsKey(u.uid)) {
+                              return document["isShared"] == "false"
+                                  ? PostDesign(
+                                caption: document["caption"],
+                                image: document["images"],
+                                uid: document["author"],
+                                postID: document["postID"],
+                                sharedPost: "false",
+                              )
+                                  : PostShareWidget(
+                                sharedUid: document["sharedPostOwner"],
+                                sharedPostID: document["postShared"],
+                                sharedBy: document["author"],
+                              );
                             } else {
-                              if (snapshots.data.data().containsKey(u.uid)) {
-                                return document["isShared"] == "false"
-                                    ? PostDesign(
-                                        caption: document["caption"],
-                                        image: document["images"],
-                                        uid: document["author"],
-                                        postID: document["postID"],
-                                        sharedPost: "false",
-                                      )
-                                    : PostShareWidget(
-                                        sharedUid: document["sharedPostOwner"],
-                                        sharedPostID: document["postShared"],
-                                        sharedBy: document["author"],
-                                      );
-                              } else {
-                                return Container();
-                              }
+                              return Container();
                             }
-                          })
-                      : document["isShared"] == "false"
-                          ? PostDesign(
-                              caption: document["caption"],
-                              image: document["images"],
-                              uid: document["author"],
-                              postID: document["postID"],
-                              sharedPost: "false",
-                            )
-                          : PostShareWidget(
-                              sharedUid: document["sharedPostOwner"],
-                              sharedPostID: document["postShared"],
-                              sharedBy: document["author"],
-                            );
+                          }
+                        })
+                        : document["isShared"] == "false"
+                        ? PostDesign(
+                      caption: document["caption"],
+                      image: document["images"],
+                      uid: document["author"],
+                      postID: document["postID"],
+                      sharedPost: "false",
+                    )
+                        : PostShareWidget(
+                      sharedUid: document["sharedPostOwner"],
+                      sharedPostID: document["postShared"],
+                      sharedBy: document["author"],
+                    ) : Container();
+                  },);
                 } else {
                   return Shimmer.fromColors(
                       child: Container(

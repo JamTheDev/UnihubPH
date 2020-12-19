@@ -15,9 +15,145 @@ class PostShareWidget extends StatefulWidget {
 }
 
 class _PostShareWidgetState extends State<PostShareWidget> {
+  bool isDeleting = false;
   User u = FirebaseAuth.instance.currentUser;
   final firestore = FirebaseFirestore.instance;
-
+  Future<void> _showDialog(String text, String title) async {
+    return showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(title),
+            content: Text(text),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text("Ok."))
+            ],
+          );
+        });
+  }
+  Future openDialog() {
+    return showDialog(
+        context: context,
+        useSafeArea: true,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            scrollable: true,
+            title: Text("Post Settings"),
+            content: Container(
+              height: MediaQuery.of(context).size.height / 4,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  widget.sharedBy == u.uid ? Container(
+                    margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          isDeleting = true;
+                        });
+                        firestore
+                            .collection("PostsPath")
+                            .doc(widget.sharedPostID)
+                            .delete();
+                            Navigator.of(context).pop();
+                            _showDialog(
+                                "Your post has been deleted!", "Success!");
+                        setState(() {
+                          isDeleting = false;
+                        });
+                      },
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete),
+                          Container(
+                            child: Text(
+                              "Delete Post",
+                              style: TextStyle(fontFamily: "Sen"),
+                            ),
+                            margin: EdgeInsets.fromLTRB(15, 0, 0, 0),
+                          )
+                        ],
+                      ),
+                    ),
+                  ) : Container(),
+                  Container(
+                    margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                    child: GestureDetector(
+                      onTap: () {
+                        /*
+                      if(widget.sharedPost != "true"){
+                                              firestore.collection("PostsPath").doc(widget.postID).delete().then((value) async {
+                                                StorageReference photoRef = FirebaseStorage.instance
+                                                    .ref().child("profilePictures/" + widget.image);
+                                                await photoRef.delete().whenComplete(() => _showDialog("Your post has been deleted!", "Success!"));
+                                              });
+                                            }
+                       */
+                      },
+                      child: Row(
+                        children: [
+                          Icon(Icons.error),
+                          Container(
+                            child: Text(
+                              "Report Post",
+                              style: TextStyle(fontFamily: "Sen"),
+                            ),
+                            margin: EdgeInsets.fromLTRB(15, 0, 0, 0),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                  Container(
+                    margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                    child: GestureDetector(
+                      onTap: () {},
+                      child: Row(
+                        children: [
+                          Icon(Icons.create),
+                          Container(
+                            child: Text(
+                              "Save Post",
+                              style: TextStyle(fontFamily: "Sen"),
+                            ),
+                            margin: EdgeInsets.fromLTRB(15, 0, 0, 0),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                  Container(
+                    margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                    child: GestureDetector(
+                      onTap: () {},
+                      child: Row(
+                        children: [
+                          Icon(Icons.create),
+                          Container(
+                            child: Text(
+                              "Downvote Post",
+                              style: TextStyle(fontFamily: "Sen"),
+                            ),
+                            margin: EdgeInsets.fromLTRB(15, 0, 0, 0),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text("EXIT"))
+            ],
+          );
+        });
+  }
   Future getPosts() async {
     QuerySnapshot qs = await firestore
         .collection("PostsPath")
@@ -204,6 +340,9 @@ class _PostShareWidgetState extends State<PostShareWidget> {
                   margin: EdgeInsets.fromLTRB(5, 0, 0, 0),
                   child: GestureDetector(
                     child: Icon(Icons.more_horiz),
+                    onTap: () {
+                      openDialog();
+                    },
                   ),
                 ),
               )

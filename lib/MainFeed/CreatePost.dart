@@ -38,6 +38,12 @@ class _CreatePostState extends State<CreatePost> {
       final _storage = FirebaseStorage.instance;
       var id = FirebaseFirestore.instance.collection("PostsPath").doc().id;
       ref2.doc(id).set({"dummy": "dum"});
+      ref.doc(id).collection("others").doc("reports").set({
+        "test": "report",
+      });
+      ref.doc(id).collection("others").doc("hides").set({
+        "test": "hidden",
+      });
       ref3.doc(id).set({
         id: {
           "caption": null,
