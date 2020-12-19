@@ -16,6 +16,8 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   User u = FirebaseAuth.instance.currentUser;
   ScrollController controller;
+  CollectionReference d;
+
   DocumentSnapshot _lastVisible;
   bool _isLoading;
   List<DocumentSnapshot> _data = new List<DocumentSnapshot>();
@@ -68,6 +70,7 @@ class _HomeState extends State<Home> {
     controller = new ScrollController()..addListener(_scrollListener);
     super.initState();
     _isLoading = true;
+    d = FirebaseFirestore.instance.collection("PostsPath");
     getPosts();
   }
 
@@ -116,6 +119,7 @@ class _HomeState extends State<Home> {
               });
             },
             child: ListView.builder(
+              addAutomaticKeepAlives: true,
               key: new PageStorageKey('myListView'),
               controller: controller,
               itemCount: _data.length + 1,
@@ -133,52 +137,54 @@ class _HomeState extends State<Home> {
                       ),
                     );
                   }
-                final DocumentSnapshot document = _data[index];
-                  DocumentReference docs = FirebaseFirestore.instance.collection("PostsPath").doc(document["postID"]).collection("others").doc("hides");
-                  return StreamBuilder(stream: docs.snapshots(), builder: (_, snap) {
-                      return !snap.data.data().containsKey(u.uid) ? document["author"] != u.uid
-                        ? StreamBuilder(
-                        stream: FirebaseFirestore.instance
-                            .collection("FollowUsers")
-                            .doc(document["author"])
-                            .snapshots(),
-                        builder: (_, snapshots) {
-                          if (!snapshots.hasData) {
-                            return Container();
+                  /*
+
+                   */
+                  final DocumentSnapshot document = _data[index];
+                  DocumentReference docs = d.doc(document["postID"]).collection("others").doc("hides");
+                  return  document["author"] != u.uid
+                      ?  StreamBuilder(
+                      stream: FirebaseFirestore.instance
+                          .collection("FollowUsers")
+                          .doc(document["author"])
+                          .snapshots(),
+                      builder: (_, snapshots) {
+                        if (!snapshots.hasData) {
+                          return Container();
+                        } else {
+                          if (snapshots.data.data().containsKey(u.uid)) {
+                            return document["isShared"] == "false"
+                                ? PostDesign(
+                              caption: document["caption"],
+                              image: document["images"],
+                              uid: document["author"],
+                              postID: document["postID"],
+                              sharedPost: "false",
+                            )
+                                : PostShareWidget(
+                              sharedUid: document["sharedPostOwner"],
+                              sharedPostID: document["postShared"],
+                              sharedBy: document["author"],
+                            );
                           } else {
-                            if (snapshots.data.data().containsKey(u.uid)) {
-                              return document["isShared"] == "false"
-                                  ? PostDesign(
-                                caption: document["caption"],
-                                image: document["images"],
-                                uid: document["author"],
-                                postID: document["postID"],
-                                sharedPost: "false",
-                              )
-                                  : PostShareWidget(
-                                sharedUid: document["sharedPostOwner"],
-                                sharedPostID: document["postShared"],
-                                sharedBy: document["author"],
-                              );
-                            } else {
-                              return Container();
-                            }
+                            return Container();
                           }
-                        })
-                        : document["isShared"] == "false"
-                        ? PostDesign(
-                      caption: document["caption"],
-                      image: document["images"],
-                      uid: document["author"],
-                      postID: document["postID"],
-                      sharedPost: "false",
-                    )
-                        : PostShareWidget(
-                      sharedUid: document["sharedPostOwner"],
-                      sharedPostID: document["postShared"],
-                      sharedBy: document["author"],
-                    ) : Container();
-                  },);
+                        }
+                      })
+                      : document["isShared"] == "false"
+                      ? PostDesign(
+                    caption: document["caption"],
+                    image: document["images"],
+                    uid: document["author"],
+                    postID: document["postID"],
+                    sharedPost: "false",
+                  )
+                      : PostShareWidget(
+                    sharedUid: document["sharedPostOwner"],
+                    sharedPostID: document["postShared"],
+                    sharedBy: document["author"],
+                  );
+
                 } else {
                   return Shimmer.fromColors(
                       child: Container(

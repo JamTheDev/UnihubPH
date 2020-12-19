@@ -682,6 +682,7 @@ class _PostDesignState extends State<PostDesign> {
                         Container(
                           child: widget.image != null
                               ? Container(
+
                                   padding: widget.image == null
                                       ? EdgeInsets.fromLTRB(0, 5, 0, 0)
                                       : EdgeInsets.fromLTRB(0, 5, 0, 20),

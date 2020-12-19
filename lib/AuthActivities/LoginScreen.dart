@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:unihub/CustomWidgets/TextWid.dart';
+import 'package:unihub/DartFiles/AuthExceptionHandler.dart';
 import 'package:unihub/MainFeed/HomeScreen.dart';
 import 'AuthService.dart';
 import 'Register/WelcomeP1.dart';
@@ -23,35 +24,31 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController controller2 = new TextEditingController();
   final GlobalKey<FormState> form = new GlobalKey<FormState>();
 
-  void clearControllers() {
+  Future<void> clearControllers() async {
     User u = FirebaseAuth.instance.currentUser;
     if (form.currentState.validate()) {
       form.currentState.save();
       setState(() {
         isLoggingIn = true;
       });
-      AuthService().signIn(email, password)..catchError((e) {
+      final status = await AuthService().login(email: email, pass: password);
+
+
+      print(status);
+      if(status == AuthResultStatus.successful || status == AuthResultStatus.emailAlreadyExists) {
         setState(() {
           isLoggingIn = false;
         });
-        _showDialog(e.toString(), "Error");
-        return;
-      }).whenComplete(() {
-        if (u != null) {
-          setState(() {
-            isLoggingIn = false;
-          });
-          controller.text = "";
-          controller2.text = "";
-          Navigator.pushNamedAndRemoveUntil(context, "/home", (r) => false);
-        } else {
-          setState(() {
-            isLoggingIn = false;
-          });
-          _showDialog("This account is wrong, or is not registered. try again!",
-              "Error");
-        }
-      });
+        controller.text = "";
+        controller2.text = "";
+        Navigator.pushNamedAndRemoveUntil(context, "/home", (r) => false);
+      } else {
+        setState(() {
+          isLoggingIn = false;
+        });
+        final errorMsg = AuthExceptionHandler.generateExceptionMessage(status);
+        _showDialog(errorMsg, "Error!");
+      }
     }
   }
 

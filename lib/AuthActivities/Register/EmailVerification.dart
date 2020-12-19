@@ -4,6 +4,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:unihub/AuthActivities/Verification/PhoneVerification.dart';
+import 'package:unihub/DartFiles/AuthExceptionHandler.dart';
 import 'package:unihub/DartFiles/RegisterInformation.dart';
 
 import '../AuthService.dart';
@@ -25,46 +26,54 @@ class _VerificationState extends State<Verification> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   void uploadToDb(String uid) async {
     AuthService a = AuthService();
-    a.signIn(email, RegisterInformation.password);
-    final u = FirebaseAuth.instance.currentUser;
-    var snapshot = await _storage
-        .ref()
-        .child("profilePictures/" + u.uid)
-        .putFile(RegisterInformation.image)
-        .onComplete;
-    var downloadUrl = await snapshot.ref.getDownloadURL();
-    User user = auth.currentUser;
-    user.updateProfile(
-        displayName: RegisterInformation.userTag, photoURL: downloadUrl);
-    CollectionReference refS =
-        FirebaseFirestore.instance.collection("UserInfo");
-    CollectionReference ref2 =
-        FirebaseFirestore.instance.collection("FollowUsers");
-    ref2.doc(user.uid).set({"dummy": "dum"});
-    refS.doc(user.uid).set({
-      "firstName": RegisterInformation.firstName,
-      "lastName": RegisterInformation.lastName,
-      "usertag": RegisterInformation.userTag,
-      "createdAt": Timestamp.now(),
-      "bio": RegisterInformation.bio,
-      "city": RegisterInformation.city,
-      "province": RegisterInformation.province,
-      "month": RegisterInformation.month,
-      "id": user.uid,
-      "betauser": true,
-      "day": RegisterInformation.day,
-      "year": RegisterInformation.year,
-      "profile": downloadUrl
-    }).whenComplete(() {
-      setState(() {
-        isRegistering = false;
+    final status = a.createAccount(email: email, pass: RegisterInformation.password);
+    if (status.toString() == AuthResultStatus.successful.toString()) {
+      final u = FirebaseAuth.instance.currentUser;
+      var snapshot = await _storage
+          .ref()
+          .child("profilePictures/" + u.uid)
+          .putFile(RegisterInformation.image)
+          .onComplete;
+      var downloadUrl = await snapshot.ref.getDownloadURL();
+      User user = auth.currentUser;
+      user.updateProfile(
+          displayName: RegisterInformation.userTag, photoURL: downloadUrl);
+      CollectionReference refS =
+      FirebaseFirestore.instance.collection("UserInfo");
+      CollectionReference ref2 =
+      FirebaseFirestore.instance.collection("FollowUsers");
+      ref2.doc(user.uid).set({"dummy": "dum"});
+      refS.doc(user.uid).set({
+        "firstName": RegisterInformation.firstName,
+        "lastName": RegisterInformation.lastName,
+        "usertag": RegisterInformation.userTag,
+        "createdAt": Timestamp.now(),
+        "bio": RegisterInformation.bio,
+        "city": RegisterInformation.city,
+        "province": RegisterInformation.province,
+        "month": RegisterInformation.month,
+        "id": user.uid,
+        "betauser": true,
+        "day": RegisterInformation.day,
+        "year": RegisterInformation.year,
+        "profile": downloadUrl
+      }).whenComplete(() {
+        setState(() {
+          isRegistering = false;
+        });
+        Navigator.pushNamedAndRemoveUntil(context, "/home", (r) => false);
+        _showDialog(
+            "Welcome to the beta-testing of unihub, " +
+                RegisterInformation.firstName,
+            "Welcome!");
       });
-      Navigator.pushNamedAndRemoveUntil(context, "/home", (r) => false);
-      _showDialog(
-          "Welcome to the beta-testing of unihub, " +
-              RegisterInformation.firstName,
-          "Welcome!");
-    });
+    } else {
+      final errorMsg = AuthExceptionHandler.generateExceptionMessage(
+          status);
+      _showDialog(errorMsg, "Error!");
+      return;
+    }
+
   }
 
   String email;
@@ -189,16 +198,13 @@ class _VerificationState extends State<Verification> {
       return;
     }
     AuthService a = new AuthService();
-    a.registerAccount(email, RegisterInformation.password).whenComplete(() {
+    a.createAccount(email: email, pass: RegisterInformation.password).whenComplete(() {
       FirebaseAuth auth = FirebaseAuth.instance;
       User user = auth.currentUser;
       uploadToDb(user.uid);
-    }).catchError((onError) {
-      _showDialog(onError.toString(), "Error!");
-      setState(() {
-        isRegistering = false;
-      });
-      return;
+    });
+    setState(() {
+      isRegistering = false;
     });
   }
 

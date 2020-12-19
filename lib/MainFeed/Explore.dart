@@ -11,15 +11,23 @@ class _ExploreState extends State<Explore> {
   String search;
   final GlobalKey<FormState> searchKey = GlobalKey();
   final TextEditingController cont = new TextEditingController();
+
   Future getUsers(String text) async {
     print(text);
     final firestore = FirebaseFirestore.instance;
-    QuerySnapshot qs_noparam = await firestore.collection("UserInfo").orderBy("createdAt", descending: true).get();
-    QuerySnapshot qs_wtparam = await firestore.collection("UserInfo").where("usertag", isEqualTo: text).get();
+    QuerySnapshot qs_noparam = await firestore
+        .collection("UserInfo")
+        .orderBy("createdAt", descending: true)
+        .get();
+    QuerySnapshot qs_wtparam = await firestore
+        .collection("UserInfo")
+        .where("usertag", isEqualTo: text)
+        .get();
     return text != null ? qs_wtparam.docs : qs_noparam.docs;
   }
+
   void valid() {
-    if(searchKey.currentState.validate()) {
+    if (searchKey.currentState.validate()) {
       searchKey.currentState.save();
       cont.text = "";
     }
@@ -67,9 +75,7 @@ class _ExploreState extends State<Explore> {
                             onTap: () {
                               valid();
                             },
-                          )
-                      ),
-
+                          )),
                       onSaved: (value) {
                         setState(() {
                           search = cont.text;
@@ -112,20 +118,24 @@ class _ExploreState extends State<Explore> {
                               child: Center(child: CircularProgressIndicator()),
                             )
                           : Expanded(
-                            child: ListView.builder(
+                              child: ListView.builder(
+                                key: new PageStorageKey('myListView'),
                                 itemBuilder: (_, index) {
                                   return UserDisplay(
                                     profile: snapshot.data[index]["profile"],
-                                    username: snapshot.data[index]["firstName"] +
+                                    username: snapshot.data[index]
+                                            ["firstName"] +
                                         " " +
                                         snapshot.data[index]["lastName"],
                                     tag: "@" + snapshot.data[index]["usertag"],
                                     uid: snapshot.data[index]["id"],
                                   );
                                 },
-                                itemCount: snapshot.data.length == null ? 0 : snapshot.data.length,
+                                itemCount: snapshot.data.length == null
+                                    ? 0
+                                    : snapshot.data.length,
                               ),
-                          );
+                            );
                     }),
               )
             ],

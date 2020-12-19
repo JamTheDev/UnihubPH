@@ -118,7 +118,11 @@ class _CreatePostState extends State<CreatePost> {
 
   Widget imageWidget() {
     if (_selectedFile != null) {
-      return Container(child: Image.file(_selectedFile));
+      return Container(child: Image.file(_selectedFile), margin: EdgeInsets.all(10), decoration: BoxDecoration(
+        borderRadius: BorderRadius.all(
+            Radius.circular(5.0) //                 <--- border radius here
+        ),
+      ),);
     } else {
       return Container();
     }
@@ -352,6 +356,17 @@ class _CreatePostState extends State<CreatePost> {
                       _getImage(ImageSource.camera);
                     },
                   ),
+                  Center(
+                    child: Image(image: AssetImage("./images/chat.png")),
+                  ),
+                  Center(
+                    child: Container(
+                      child: Text("Maintain The Cleanliness!", style: TextStyle(fontFamily: "Sen", fontWeight: FontWeight.bold, fontSize: 20)),
+                    ),
+                  )
+                  /*
+                  It is better to post only about our country to maintain the focus of Unihub. Avoid anything unpleasant to those who can see your post.
+                   */
                 ],
               ),
             ),
