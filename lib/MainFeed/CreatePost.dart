@@ -23,69 +23,74 @@ class _CreatePostState extends State<CreatePost> {
   User user = FirebaseAuth.instance.currentUser;
 
   void uploadToDatabase() async {
-    setState(() {
-      isPosting = true;
-      isReady = true;
-    });
+
     if (inp.currentState.validate()) {
-      inp.currentState.save();
-      CollectionReference ref =
-          FirebaseFirestore.instance.collection("PostsPath");
-      CollectionReference ref2 =
-          FirebaseFirestore.instance.collection("PostLikes");
-      CollectionReference ref3 =
-          FirebaseFirestore.instance.collection("PostComments");
-      final _storage = FirebaseStorage.instance;
-      var id = FirebaseFirestore.instance.collection("PostsPath").doc().id;
-      ref2.doc(id).set({"dummy": "dum"});
-      ref.doc(id).collection("others").doc("reports").set({
-        "test": "report",
-      });
-      ref.doc(id).collection("others").doc("hides").set({
-        "test": "hidden",
-      });
-      ref3.doc(id).set({
-        id: {
-          "caption": null,
-          "createdAt": null,
-          "author": null,
-          "commentID": null,
-          "postID": null
-        }
-      });
-      var snapshot;
-      if (_selectedFile != null) {
-        snapshot = await _storage
-            .ref()
-            .child("postsImages/" + id)
-            .putFile(_selectedFile)
-            .onComplete;
-      }
-      var downloadUrl =
-          _selectedFile == null ? null : await snapshot.ref.getDownloadURL();
-      ref.doc(id).set({
-        "caption": postInfo,
-        "images": _selectedFile == null ? null : downloadUrl,
-        "time": DateTime.now().microsecondsSinceEpoch,
-        "author": user.uid,
-        "postID": id,
-        "isShared": "false",
-        "createdAt": Timestamp.now()
-      }).whenComplete(() {
-        Fluttertoast.showToast(
-          msg: "Post has been posted!",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.CENTER,
-          timeInSecForIosWeb: 1,
-        );
+      if (postInfo != null && _selectedFile != null){
         setState(() {
-          isPosting = false;
-          isReady = false;
-          textEditingController.clear();
-          _selectedFile = null;
-          Navigator.of(context).pop();
+          isPosting = true;
+          isReady = true;
         });
-      });
+        inp.currentState.save();
+        CollectionReference ref =
+        FirebaseFirestore.instance.collection("PostsPath");
+        CollectionReference ref2 =
+        FirebaseFirestore.instance.collection("PostLikes");
+        CollectionReference ref3 =
+        FirebaseFirestore.instance.collection("PostComments");
+        final _storage = FirebaseStorage.instance;
+        var id = FirebaseFirestore.instance.collection("PostsPath").doc().id;
+        ref2.doc(id).set({"dummy": "dum"});
+        ref.doc(id).collection("others").doc("reports").set({
+          "test": "report",
+        });
+        ref.doc(id).collection("others").doc("hides").set({
+          "test": "hidden",
+        });
+        ref3.doc(id).set({
+          id: {
+            "caption": null,
+            "createdAt": null,
+            "author": null,
+            "commentID": null,
+            "postID": null
+          }
+        });
+        var snapshot;
+        if (_selectedFile != null) {
+          snapshot = await _storage
+              .ref()
+              .child("postsImages/" + id)
+              .putFile(_selectedFile)
+              .onComplete;
+        }
+        var downloadUrl =
+        _selectedFile == null ? null : await snapshot.ref.getDownloadURL();
+        ref.doc(id).set({
+          "caption": postInfo == null ? null : postInfo,
+          "images": _selectedFile == null ? null : downloadUrl,
+          "time": DateTime.now().microsecondsSinceEpoch,
+          "author": user.uid,
+          "postID": id,
+          "isShared": "false",
+          "createdAt": Timestamp.now()
+        }).whenComplete(() {
+          Fluttertoast.showToast(
+            msg: "Post has been posted!",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.CENTER,
+            timeInSecForIosWeb: 1,
+          );
+          setState(() {
+            isPosting = false;
+            isReady = false;
+            textEditingController.clear();
+            _selectedFile = null;
+            Navigator.of(context).pop();
+          });
+        });
+      } else {
+        _showDialog("Your post is EMPTY!", "Hang on!");
+      }
     } else {
       setState(() {
         isPosting = true;
@@ -93,7 +98,22 @@ class _CreatePostState extends State<CreatePost> {
       });
     }
   }
-
+  Future<void> _showDialog(String text, String title) async {
+    return showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(title),
+            content: Text(text),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text("Ok."))
+            ],
+          );
+        });
+  }
   bool inProcess = false;
   File _selectedFile;
 
@@ -118,11 +138,11 @@ class _CreatePostState extends State<CreatePost> {
 
   Widget imageWidget() {
     if (_selectedFile != null) {
-      return Container(child: Image.file(_selectedFile), margin: EdgeInsets.all(10), decoration: BoxDecoration(
+      return Container(child: Container(child: Image.file(_selectedFile), decoration: BoxDecoration(
         borderRadius: BorderRadius.all(
-            Radius.circular(5.0) //                 <--- border radius here
+            Radius.circular(20.0) //                 <--- border radius here
         ),
-      ),);
+      )), margin: EdgeInsets.all(10) ,);
     } else {
       return Container();
     }
@@ -356,16 +376,26 @@ class _CreatePostState extends State<CreatePost> {
                       _getImage(ImageSource.camera);
                     },
                   ),
-                  Center(
-                    child: Image(image: AssetImage("./images/chat.png")),
+                  Container(
+                    margin: EdgeInsets.fromLTRB(0, 50, 0, 20),
+                    child: Center(
+                      child: Image(image: AssetImage("./images/chat.png")),
+                    ),
                   ),
                   Center(
                     child: Container(
                       child: Text("Maintain The Cleanliness!", style: TextStyle(fontFamily: "Sen", fontWeight: FontWeight.bold, fontSize: 20)),
                     ),
+                  ),
+
+                  Center(
+                    child: Container(
+                      margin: EdgeInsets.fromLTRB(0, 10, 0, 50),
+                      child: Text("It is better to post only about our country to maintain the focus of Unihub. \nAvoid anything unpleasant to those who can see your post.", style: TextStyle(fontFamily: "Sen", fontSize: 14), textAlign: TextAlign.center,),
+                    ),
                   )
                   /*
-                  It is better to post only about our country to maintain the focus of Unihub. Avoid anything unpleasant to those who can see your post.
+
                    */
                 ],
               ),

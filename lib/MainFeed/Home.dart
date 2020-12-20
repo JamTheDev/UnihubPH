@@ -124,7 +124,6 @@ class _HomeState extends State<Home> {
               controller: controller,
               itemCount: _data.length + 1,
               itemBuilder: (_, index) {
-
                 if (index < _data.length) {
                   if (_data.length == 0) {
                     return Container(
@@ -137,11 +136,8 @@ class _HomeState extends State<Home> {
                       ),
                     );
                   }
-                  /*
 
-                   */
                   final DocumentSnapshot document = _data[index];
-                  DocumentReference docs = d.doc(document["postID"]).collection("others").doc("hides");
                   return  document["author"] != u.uid
                       ?  StreamBuilder(
                       stream: FirebaseFirestore.instance

@@ -26,8 +26,9 @@ class _VerificationState extends State<Verification> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   void uploadToDb(String uid) async {
     AuthService a = AuthService();
-    final status = a.createAccount(email: email, pass: RegisterInformation.password);
-    if (status.toString() == AuthResultStatus.successful.toString()) {
+    a.createAccount(email: email, pass: RegisterInformation.password);
+    final status = await a.login(email: email, pass: RegisterInformation.password);
+    if (status == AuthResultStatus.successful) {
       final u = FirebaseAuth.instance.currentUser;
       var snapshot = await _storage
           .ref()
@@ -47,6 +48,7 @@ class _VerificationState extends State<Verification> {
         "firstName": RegisterInformation.firstName,
         "lastName": RegisterInformation.lastName,
         "usertag": RegisterInformation.userTag,
+        "veri fied": RegisterInformation.userTag,
         "createdAt": Timestamp.now(),
         "bio": RegisterInformation.bio,
         "city": RegisterInformation.city,
@@ -176,9 +178,6 @@ class _VerificationState extends State<Verification> {
   }
 
   void validateForm() async {
-    setState(() {
-      isRegistering = true;
-    });
     form.currentState.save();
     form2.currentState.save();
     email = email == "" ? null : email;
@@ -353,6 +352,9 @@ class _VerificationState extends State<Verification> {
               margin: EdgeInsets.fromLTRB(0, 25, 0, 0),
               child: FlatButton.icon(
                 onPressed: () {
+                  setState(() {
+                    isRegistering = true;
+                  });
                   validateForm();
                 },
                 icon: Icon(

@@ -6,11 +6,9 @@ class AuthService{
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final _auth = FirebaseAuth.instance;
   AuthResultStatus _status;
-  UserUID _userFromFirebaseAuth(User user){
-    return user != null ? UserUID(uid: user.uid) : null;
-  }
   Future<AuthResultStatus> createAccount({email, pass}) async {
     try {
+      print(email);
       UserCredential authResult = await _auth.createUserWithEmailAndPassword(
           email: email, password: pass);
       if (authResult.user != null) {

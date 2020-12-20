@@ -29,6 +29,7 @@ class _MainAppScreenState extends State<MainAppScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
+
    /*
     FirebaseAuth.instance.authStateChanges().listen((event) {
       if(event == null){
